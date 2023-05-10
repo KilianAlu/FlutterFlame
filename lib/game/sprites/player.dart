@@ -41,10 +41,13 @@ class Player extends SpriteGroupComponent<PlayerState>
   bool get isMovingDown => _velocity.y > 0;
   Character character;
   double jumpSpeed;
+  bool jumpCharge = true;
   final double _gravity = 9;
   // Core gameplay: Add _gravity property
 
-
+  void rechargeJump(){
+    jumpCharge = true;
+  }
 
   @override
   Future<void> onLoad() async {
@@ -98,8 +101,9 @@ class Player extends SpriteGroupComponent<PlayerState>
      if (keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
       moveRight();
     }
-      if (keysPressed.contains(LogicalKeyboardKey.arrowUp)) {
-      jump();
+      if (keysPressed.contains(LogicalKeyboardKey.arrowUp) && character.name == "mario" && jumpCharge == true) {
+        jumpCharge = false;
+        jump();
     }
 
     // Add a Player to the game: Add keypress logic
@@ -109,7 +113,11 @@ class Player extends SpriteGroupComponent<PlayerState>
 
   void moveLeft() {
     _hAxisInput = 0;
-    current = PlayerState.left;
+    if (isWearingHat) {                                       
+     current = PlayerState.nooglerLeft;
+   } else if (!hasPowerup) {                                           
+     current = PlayerState.left;
+   }        
     _hAxisInput += movingLeftInput;
 
     // Add a Player to the game: Add logic for moving left
@@ -117,7 +125,11 @@ class Player extends SpriteGroupComponent<PlayerState>
 
   void moveRight() {
     _hAxisInput = 0;
-    current = PlayerState.right;
+     if (isWearingHat) {                                      
+     current = PlayerState.nooglerRight;
+   } else if (!hasPowerup) {                                            
+     current = PlayerState.right;
+   }                            
     _hAxisInput += movingRightInput;
 
     // Add a Player to the game: Add logic for moving right
@@ -132,12 +144,28 @@ class Player extends SpriteGroupComponent<PlayerState>
   // Powerups: Add isInvincible getter
 
   // Powerups: Add isWearingHat getter
+  bool get hasPowerup =>                                      
+     current == PlayerState.rocket ||
+     current == PlayerState.nooglerLeft ||
+     current == PlayerState.nooglerRight ||
+     current == PlayerState.nooglerCenter;
+
+ bool get isInvincible => current == PlayerState.rocket;
+
+ bool get isWearingHat =>
+     current == PlayerState.nooglerLeft ||
+     current == PlayerState.nooglerRight ||
+     current == PlayerState.nooglerCenter;
 
   // Core gameplay: Override onCollision callback
 
 @override
 void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
    super.onCollision(intersectionPoints, other);
+   if (other is EnemyPlatform && !isInvincible) {                           
+      gameRef.onLose();
+      return;
+    }   
    bool isCollidingVertically =
        (intersectionPoints.first.y - intersectionPoints.last.y).abs() < 5;
 
@@ -147,7 +175,35 @@ void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
        jump();
        return;
      }
+      else if (other is SpringBoard) {                    
+       jump(specialJumpSpeed: jumpSpeed * 2);
+       return;
+     } else if (other is BrokenPlatform &&
+         other.current == BrokenPlatformState.cracked) {
+       jump();
+       other.breakPlatform();
+       return;
+     }
+     else if(other is GoombaPlataforma){
+      rechargeJump();
+      jump();
+      return;
+     }        
    }
+   if (!hasPowerup && other is Rocket) {                    
+      current = PlayerState.rocket;
+      other.removeFromParent();
+      jump(specialJumpSpeed: jumpSpeed * other.jumpSpeedMultiplier);
+      return;
+    } else if (!hasPowerup && other is NooglerHat) {
+      if (current == PlayerState.center) current = PlayerState.nooglerCenter;
+      if (current == PlayerState.left) current = PlayerState.nooglerLeft;
+      if (current == PlayerState.right) current = PlayerState.nooglerRight;
+      other.removeFromParent();
+      _removePowerupAfterTime(other.activeLengthInMS);
+      jump(specialJumpSpeed: jumpSpeed * other.jumpSpeedMultiplier);
+      return;
+    }
  }
   // Core gameplay: Add a jump method
 

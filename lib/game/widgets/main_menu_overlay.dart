@@ -82,6 +82,16 @@ class _MainMenuOverlayState extends State<MainMenuOverlay> {
                         },
                         characterWidth: characterWidth,
                       ),
+                      CharacterButton(
+                        character: Character.mario,
+                        selected: character == Character.mario,
+                        onSelectChar: () {
+                          setState(() {
+                            character = Character.mario;
+                          });
+                        },
+                        characterWidth: characterWidth,
+                      ),
                     ],
                   ),
                   if (!screenHeightIsSmall) const WhiteSpace(height: 50),

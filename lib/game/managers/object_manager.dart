@@ -60,6 +60,7 @@ class ObjectManager extends Component with HasGameRef<DoodleDash> {
     'noogler': false, // level 3
     'rocket': false, // level 4
     'enemy': false, // level 5
+    'paraGoomba':false,
   };
 
   @override                                           
@@ -78,6 +79,8 @@ class ObjectManager extends Component with HasGameRef<DoodleDash> {
      add(nextPlat);
 
      _platforms.add(nextPlat);
+     _maybeAddEnemy();
+     _maybeAddPowerup();
 
      gameRef.gameManager.increaseScore();
 
@@ -105,9 +108,21 @@ class ObjectManager extends Component with HasGameRef<DoodleDash> {
     switch (level) {
         case 1:
       enableSpecialty('spring');
+         if(gameRef.player.character.name == "mario"){
+        enableSpecialty('paraGoomba');
+      };
       break;
     case 2:
       enableSpecialty('broken');
+      break;
+    case 3:                                              
+        enableSpecialty('noogler');           
+        break;                                
+      case 4:                                 
+        enableSpecialty('rocket');            
+        break;      
+    case 5:                                                 
+      enableSpecialty('enemy');                    
       break;
     }
   }
@@ -165,14 +180,77 @@ Platform _semiRandomPlatform(Vector2 position) {
        probGen.generateWithProbability(15)) {
      return SpringBoard(position: position);
    }
-
+  
+  if(specialPlatforms['paraGoomba'] == true && 
+  probGen.generateWithProbability(40)){
+    return GoombaPlataforma(position:position);
+  }
    if (specialPlatforms['broken'] == true &&
        probGen.generateWithProbability(10)) {
      return BrokenPlatform(position: position);
-   }    
+   }
+
+
     return NormalPlatform(position: position);
 } 
   // Losing the game: Add enemy code
+  final List<EnemyPlatform> _enemies = [];                    
+void _maybeAddEnemy() {
+  if (specialPlatforms['enemy'] != true) {
+    return;
+  }
+  if (probGen.generateWithProbability(20)) {
+    var enemy = EnemyPlatform(
+      position: Vector2(_generateNextX(100), _generateNextY()),
+    );
+    add(enemy);
+    _enemies.add(enemy);
+    _cleanupEnemies();
+  }
+}
 
+void _cleanupEnemies() {
+  final screenBottom = gameRef.player.position.y +
+      (gameRef.size.x / 2) +
+      gameRef.screenBufferSpace;
+  
+  while (_enemies.isNotEmpty && _enemies.first.position.y > screenBottom) {
+    remove(_enemies.first);
+    _enemies.removeAt(0);
+  }
+}                
   // Powerups: Add Power-Up code
+  final List<PowerUp> _powerups = [];                          
+
+ void _maybeAddPowerup() {
+   if (specialPlatforms['noogler'] == true &&
+       probGen.generateWithProbability(20)) {
+     var nooglerHat = NooglerHat(
+       position: Vector2(_generateNextX(75), _generateNextY()),
+     );
+     add(nooglerHat);
+     _powerups.add(nooglerHat);
+   } else if (specialPlatforms['rocket'] == true &&
+       probGen.generateWithProbability(15)) {
+     var rocket = Rocket(
+       position: Vector2(_generateNextX(50), _generateNextY()),
+     );
+     add(rocket);
+     _powerups.add(rocket);
+   }
+
+   _cleanupPowerups();
+ }
+
+ void _cleanupPowerups() {
+   final screenBottom = gameRef.player.position.y +
+       (gameRef.size.x / 2) +
+       gameRef.screenBufferSpace;
+   while (_powerups.isNotEmpty && _powerups.first.position.y > screenBottom) {
+     if (_powerups.first.parent != null) {
+       remove(_powerups.first);
+     }
+     _powerups.removeAt(0);
+   }
+ }                 
 }

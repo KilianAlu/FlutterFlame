@@ -177,5 +177,56 @@ class SpringBoard extends Platform<SpringState> {
 }
 
 // Losing the game: Add EnemyPlatformState Enum
-
 // Losing the game: Add EnemyPlatform class
+
+enum EnemyPlatformState { only }                            
+
+
+class EnemyPlatform extends Platform<EnemyPlatformState> {
+  EnemyPlatform({super.position});
+
+  @override
+  Future<void>? onLoad() async {
+    var randBool = Random().nextBool();
+    var enemySprite = randBool ? 'enemy_trash_can' : 'enemy_error';
+
+    sprites = <EnemyPlatformState, Sprite>{
+      EnemyPlatformState.only:
+          await gameRef.loadSprite('game/$enemySprite.png'),
+    };
+
+    current = EnemyPlatformState.only;
+
+    return super.onLoad();
+  }
+}                      
+
+enum GoombaState {down,up}
+
+class GoombaPlataforma extends Platform<GoombaState> {
+  GoombaPlataforma({
+    super.position
+  });
+
+  @override
+  Future<void>? onLoad() async{
+    await super.onLoad();
+    
+    sprites = <GoombaState, Sprite>{
+      GoombaState.down:
+        await gameRef.loadSprite('game/paraGoombaAbajo.png'),
+      GoombaState.up:
+        await gameRef.loadSprite('game/paraGoombaArriba.png'),
+    };
+
+    current = GoombaState.up;
+    
+  }
+
+  @override
+   void update(double dt){
+    super.update(0.5);
+   }
+
+
+}

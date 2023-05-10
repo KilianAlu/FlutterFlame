@@ -10,7 +10,7 @@ import './world.dart';
 import 'managers/managers.dart';
 // Add a Player to the game: import Sprites
 
-enum Character { dash, sparky }
+enum Character { dash, sparky, mario}
 
 class DoodleDash extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
