@@ -201,7 +201,7 @@ class EnemyPlatform extends Platform<EnemyPlatformState> {
   }
 }                      
 
-enum GoombaState {down,up}
+enum GoombaState {up}
 
 class GoombaPlataforma extends Platform<GoombaState> {
   GoombaPlataforma({
@@ -213,8 +213,6 @@ class GoombaPlataforma extends Platform<GoombaState> {
     await super.onLoad();
     
     sprites = <GoombaState, Sprite>{
-      GoombaState.down:
-        await gameRef.loadSprite('game/paraGoombaAbajo.png'),
       GoombaState.up:
         await gameRef.loadSprite('game/paraGoombaArriba.png'),
     };
